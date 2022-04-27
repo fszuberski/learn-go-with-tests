@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 	"testing"
+	"testing/quick"
 )
 
 var cases = []struct {
-	Arabic int
+	Arabic uint16
 	Roman  string
 }{
 	{1, "I"},
@@ -59,5 +60,22 @@ func TestConvertToArabic(t *testing.T) {
 				t.Errorf("got %d, want %d", got, test.Arabic)
 			}
 		})
+	}
+}
+
+func TestPropertiesOfConversion(t *testing.T) {
+	// Property based tests help you do this by throwing random data at your
+	// code and verifying the rules you describe always hold true.
+	assertion := func(arabicInput uint16) bool {
+		if arabicInput > 3999 {
+			return true
+		}
+		roman := ConvertToRoman(arabicInput)
+		arabic := ConvertToArabic(roman)
+		return arabic == arabicInput
+	}
+
+	if err := quick.Check(assertion, &quick.Config{MaxCount: 1000}); err != nil {
+		t.Error("failed checks", err)
 	}
 }
